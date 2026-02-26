@@ -1,7 +1,14 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect
 from flask_socketio import SocketIO, emit
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required, login_manager
+from flask_login import (
+    LoginManager,
+    UserMixin,
+    login_user,
+    logout_user,
+    current_user,
+    login_required,
+)
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 
@@ -16,11 +23,26 @@ db = SQLAlchemy(app)
 #Render debugging
 app.config["DEBUG"] = True
 
+socketio = SocketIO(
+    app,
+    cors_allowed_origins="*",
+    ping_timeout=60,
+    ping_interval=25,
+    async_mode="eventlet",
+    manage_session=False
+)
+
+login_manager = LoginManager(app)
+login_manager.login_view = "login"
+
 #DB models/framework
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), unique=True)
     password_hash = db.Column(db.String(128))
+    bio = db.Column(db.Text, default="This is your bio! Customize it!")
+    profile = db.Column(db.String(255), default="/static/default.png")
+    date_joined = db.Column(db.String(70), default=datetime.now().strftime("%m-%d-%Y"))
 
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -30,7 +52,7 @@ class Message(db.Model):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    return db.session.get(User, int(User.id))
 
 @app.route("/", methods=["GET", "POST"])
 def login():
@@ -38,16 +60,39 @@ def login():
         username = request.form["username"]
         password = request.form["password"]
         user = User.query.filter_by(username=username).first()
-        if user and check_password_hash(user.password_hash, password):
-            login_user(user)
-            return redirect("/chat")
-        else:
-            new_user = User(username=username, password_hash=generate_password_hash(password))
-            db.session.add(new_user)
-            db.session.commit()
-            login_user(new_user)
-            return redirect("/chat")
+        if user:
+            if check_password_hash(user.password_hash, password):
+                login_user(user)
+                return redirect("/home")
+            return "incorrect password!", 401
+        new_user = User(username=username, password_hash=generate_password_hash(password))
+        db.session.add(new_user)
+        db.session.comit()
+        login_user(new_user)
+        return redirect("/home")
     return render_template("login.html")
+
+@app.route("/home")
+@login_required
+def home():
+    users = User.query.all()
+    return render_template("home.html", users=users)
+
+@app.route("/profile/<username>")
+@login_required
+def profile(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    return render_template("profile.html", user=user)
+
+@app.route("/edit_profile", methods=["GET", "POST"])
+@login_required
+def edit_profile():
+    if request.method == "POST":
+        current_user.bio = request.form["bio"]
+        current_user.profile = request.form["profile"]
+        db.session.commit()
+        return redirect(f"/profile.html/{current_user.username}")
+    return render_template("edit_profile.html", user=current_user)
 
 @app.route("/chat")
 @login_required
@@ -65,9 +110,11 @@ online = {}
 
 @SocketIO.on("connect")
 def connect():
-    if current_user.is_authenticated:
-        online[request.sid] = current_user.username
-        emit("staus", f"{current_user.username} joined the chat", broadcast=True)
+    username = request.args.get("username")
+    if not username:
+        return False
+    online[request.sid] = username
+    emit("status", f"{username} joined", broadcast=True)
 
 @SocketIO.on("connect")
 def disconnect():
@@ -82,13 +129,20 @@ def data_handle_message(msg):
         "content":msg,
         "time_stamp":datetime.now().strftime("%H:%M")
     }
-    db.session.add(Message(user=data["user"], text=data["content"], time_stamp=data["time_stamp"]))
-    db.session.commit()
+    db.session.add(
+        Message(
+            user=data["user"],
+            content=data["content"],
+            time_stamp=data["time_stamp"]
+        )
+    )
     emit("message", data, broadcast=True)
 
 @SocketIO.on("typing")
 def typing():
-    emit("typing", current_user.username, broadcast=True)
+    username = online.get(request.sid)
+    if username:
+        emit("typing", current_user.username, broadcast=True)
 
 
 
