@@ -67,7 +67,7 @@ def login():
             return "incorrect password!", 401
         new_user = User(username=username, password_hash=generate_password_hash(password))
         db.session.add(new_user)
-        db.session.comit()
+        db.session.commit()
         login_user(new_user)
         return redirect("/home")
     return render_template("login.html")
