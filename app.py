@@ -108,7 +108,7 @@ def logout():
 
 online = {}
 
-@SocketIO.on("connect")
+@socketio.on("connect")
 def connect():
     username = request.args.get("username")
     if not username:
@@ -116,13 +116,13 @@ def connect():
     online[request.sid] = username
     emit("status", f"{username} joined", broadcast=True)
 
-@SocketIO.on("disconnect")
+@socketio.on("disconnect")
 def disconnect():
     username = online.pop(request.sid, None)
     if username:
         emit("status", f"{username} has left the chat", broadcast=True)
 
-@SocketIO.on("message")
+@socketio.on("message")
 def data_handle_message(msg):
     data = {
         "user":current_user.username,
@@ -138,7 +138,7 @@ def data_handle_message(msg):
     )
     emit("message", data, broadcast=True)
 
-@SocketIO.on("typing")
+@socketio.on("typing")
 def typing():
     username = online.get(request.sid)
     if username:
