@@ -116,7 +116,7 @@ def connect():
     online[request.sid] = username
     emit("status", f"{username} joined", broadcast=True)
 
-@SocketIO.on("connect")
+@SocketIO.on("disconnect")
 def disconnect():
     username = online.pop(request.sid, None)
     if username:
