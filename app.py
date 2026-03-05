@@ -11,6 +11,8 @@ from flask_login import (
 )
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+from flask_socketio import join_room
+
 
 
 
@@ -50,6 +52,14 @@ class Message(db.Model):
     text = db.Column(db.Text)
     time_stamp = db.Column(db.String(20))
 
+class ChatUser(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    chat_id = db.Column(db.Integer, db.ForeignKey("chat.id"))
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+
+class Chat(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(User, int(User.id))
@@ -75,8 +85,33 @@ def login():
 @app.route("/home")
 @login_required
 def home():
-    users = User.query.all()
-    return render_template("home.html", users=users)
+    chats = (
+        db.session.query(Chat)
+        .join(ChatUser)
+        .filter(ChatUser.user_id==current_user.id)
+        .all()
+    )
+    chat_data = []
+    for chat in chats:
+        last_msg = (
+            Message.query.filter_by(chat_id=chat.id)
+            .order_by(Message.id.desc())
+            .first()
+        )
+        other = (
+            db.session.query(User)
+            .join(ChatUser)
+            .filter(ChatUser.chat_id==chat.id, User.id != current_user.id)
+            .first()
+        )
+        chat_data.append({
+            "chat_id": chat.id,
+            "other": other,
+            "last_msg": last_msg.text if last_msg else "",
+            "last_time": last_msg.timestamp if last_msg else ""
+        })
+
+    return render_template("home.html", chats=chat_data)
 
 @app.route("/profile/<username>")
 @login_required
@@ -96,9 +131,77 @@ def edit_profile():
 
 @app.route("/chat")
 @login_required
-def chat():
-    messages = Message.query.order_by(Message.id).all()
-    return render_template("chat.html", username=current_user, messages=messages)
+def chat(chat_id):
+    messages = Message.query.filter_by(chat_id=chat_id).all()
+    other = (
+        db.sesion.query(User)
+        .join(ChatUser)
+        .filter(ChatUser.chat_id==chat_id, User.id != current_user.id)
+        .first()
+    )
+    chats = (
+        db.session.query(Chat)
+        .join(ChatUser)
+        .filter(ChatUser.user_id==current_user.id)
+        .all()
+    )
+    return render_template(
+        "chat.html",
+        username=current_user.username,
+        messages=messages,
+        chat_id=chat_id,
+        chats=chats,
+        other=other
+    )
+
+@app.route("/new_chat", methods=["POST"])
+@login_required
+def new_chat():
+    username = request.form["username"]
+    other = User.query.filter_by(username=username).first()
+    if not other or other.id == current_user.id:
+        return redirect("/chat")
+    existing = (
+        db.session.query(Chat)
+        .join(ChatUser)
+        .filter(ChatUser.id.in_([current_user.id]))
+        .group_by(Chat.id)
+        .having(db.func.count(Chat.id) == 2)
+        .first()
+    )
+    if existing:
+        return redirect(f"/chat/{existing.id}")
+    chat = Chat()
+    db.session.add(chat)
+    db.session.commit()
+    db.session.add_all([
+        ChatUser(chat_id=chat.id, user_id=current_user.id),
+        ChatUser(chat_id=chat.id, user_id=other.id)
+    ])
+    db.session.commit()
+    return redirect(f"/chat/{other.id}")
+
+
+@app.route("/chat")
+@login_required
+def chat_list():
+    chats = (
+        db.session.query(Chat)
+        .join(ChatUser)
+        .filter(ChatUser.user_id == current_user.id)
+        .all()
+    )
+    return render_template(
+        "chat.html",
+        username = current_user.username,
+        chats = chats,
+        messages = [],
+        chat_id = None
+    )
+
+@socketio.on("join_chat")
+def join(chat_id):
+    join_room(str(chat_id))
 
 @app.route("/logout")
 @login_required
@@ -123,26 +226,31 @@ def disconnect():
         emit("status", f"{username} has left the chat", broadcast=True)
 
 @socketio.on("message")
-def data_handle_message(msg):
-    data = {
-        "user":current_user.username,
-        "content":msg,
-        "time_stamp":datetime.now().strftime("%H:%M")
-    }
-    db.session.add(
-        Message(
-            user=data["user"],
-            content=data["content"],
-            time_stamp=data["time_stamp"]
-        )
+def data_handle_message(data):
+    chat_id = data["chat_id"]
+    username = online.get(request.sid)
+    if not username:
+        return
+    msg = Message(
+        chat_id=chat_id,
+        user=username,
+        text=data["text"],
+        timestamp=datetime.now().strftime("%H:%M")
     )
-    emit("message", data, broadcast=True)
+    db.session.add(msg)
+    db.session.commit()
+    emit("chat_message",
+         {
+             "user":msg.user,
+             "text":msg.text,
+             "time":msg.timestamp
+         }, room=str(chat_id))
 
 @socketio.on("typing")
 def typing():
     username = online.get(request.sid)
     if username:
-        emit("typing", current_user.username, broadcast=True)
+        emit("typing", username, broadcast=True, include_self=False)
 
 
 
