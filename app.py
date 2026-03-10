@@ -62,7 +62,7 @@ class Chat(db.Model):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return db.session.get(User, int(User.id))
+    return db.session.get(User, int(user_id))
 
 @app.route("/", methods=["GET", "POST"])
 def login():
