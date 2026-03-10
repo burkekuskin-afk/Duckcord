@@ -1,22 +1,15 @@
-/* ===== GLOBAL ===== */
-
-body {
-    font-family: Arial, sans-serif;
-    background: var(--bg);
-    margin: 0;
-    padding: 0;
-    color: var(--text);
-    transition: background 0.3s, color 0.3s;
-}
+/* ============================================================
+   GLOBAL + THEME VARIABLES
+   ============================================================ */
 
 :root {
     --bg: #f0f2f5;
     --card: #ffffff;
     --text: orange;
-    --bubble-me: #d1e7ff;
-    --bubble-other: #e9ecef;
-    --nav: #ffffff;
-    --nav-border: #ddd;
+    --bubble-me: #007aff;
+    --bubble-other: #e5e5ea;
+    --nav: orange;
+    --nav-border: dark orange;
 }
 
 body.dark {
@@ -29,8 +22,16 @@ body.dark {
     --nav-border: #444;
 }
 
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    transition: background 0.3s, color 0.3s;
+}
+
 a {
-    color: #007bff;
+    color: #007aff;
     text-decoration: none;
 }
 
@@ -38,165 +39,356 @@ a:hover {
     text-decoration: underline;
 }
 
-/* ===== NAVIGATION BAR ===== */
+/* ============================================================
+   NAVIGATION / TOP BARS
+   ============================================================ */
 
-.navbar {
+.navbar,
+.dm-header {
     background: var(--nav);
     border-bottom: 1px solid var(--nav-border);
-    padding: 12px 20px;
+    padding: 16px 20px;
+    font-size: 22px;
+    font-weight: 700;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.navbar a {
-    margin-right: 15px;
-    font-weight: bold;
+.logout-btn {
+    font-size: 16px;
+    color: orange;
+    text-decoration: none;
 }
 
-.toggle-dark {
-    cursor: pointer;
-    padding: 6px 12px;
-    border-radius: 6px;
-    background: #007bff;
-    color: white;
-    font-size: 14px;
+.img-logo {
+    float: right;
+    size: 50px 50px;
+    margin: 5px 5px;
 }
 
-/* ===== CHAT PAGE ===== */
-
-#chat {
-    height: 70vh;
-    overflow-y: auto;
-    padding: 15px;
-    background: var(--card);
-    border-radius: 10px;
-    border: 1px solid var(--nav-border);
-    margin: 20px;
-}
-
-.bubble {
-    max-width: 70%;
-    padding: 10px 14px;
-    margin: 10px 0;
-    border-radius: 12px;
-    position: relative;
-    line-height: 1.4;
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-}
-
-.bubble.me {
-    background: var(--bubble-me);
-    margin-left: auto;
-    border-bottom-right-radius: 0;
-}
-
-.bubble.other {
-    background: var(--bubble-other);
-    margin-right: auto;
-    border-bottom-left-radius: 0;
-}
-
-.bubble img.avatar-chat {
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.bubble span {
-    display: block;
-    font-size: 12px;
-    color: #666;
-    margin-top: 5px;
-    text-align: right;
-}
-
-/* ===== INPUT BAR ===== */
-
-#input {
-    margin: 20px;
-    display: flex;
-    gap: 10px;
-}
-
-#msg {
-    flex: 1;
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid var(--nav-border);
-    background: var(--card);
-    color: var(--text);
-}
-
-button {
-    padding: 12px 18px;
-    border: none;
-    background: orange
-    color: white;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-}
-
-button:hover {
-    background: light-orange;
-}
-
-/* ===== TYPING INDICATOR ===== */
-
-#typing {
-    margin-left: 25px;
-    font-size: 14px;
-    color: #888;
-    height: 20px;
-}
-
-.typing-dots::after {
-    content: "...";
-    animation: blink 1s infinite;
-}
-
-@keyframes blink {
-    0% { opacity: 0.2; }
-    50% { opacity: 1; }
-    100% { opacity: 0.2; }
-}
-
-/* ===== ONLINE DOT ===== */
-
-.online-dot {
-    width: 10px;
-    height: 10px;
-    background: #28a745;
-    border-radius: 50%;
-    display: inline-block;
-    margin-left: 6px;
-}
-
-/* ===== HOMEPAGE USER CARDS ===== */
+/* ============================================================
+   HOME PAGE — PROFILE CARD
+   ============================================================ */
 
 .profile-card {
     display: flex;
     align-items: center;
     gap: 15px;
-    padding: 12px;
+    padding: 15px;
     margin: 15px;
     background: var(--card);
-    border-radius: 10px;
+    border-radius: 12px;
     border: 1px solid var(--nav-border);
 }
 
-.avatar {
-    width: 55px;
-    height: 55px;
+.profile-avatar {
+    width: 70px;
+    height: 70px;
     border-radius: 50%;
     object-fit: cover;
 }
 
-/* ===== PROFILE PAGE ===== */
+.profile-info .name {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.profile-info .bio {
+    color: #666;
+    margin-top: 4px;
+}
+
+.edit-btn {
+    padding: 8px 14px;
+    background: #007aff;
+    color: white;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+/* ============================================================
+   HOME PAGE — DM INBOX
+   ============================================================ */
+
+.new-chat-container {
+    padding: 0 20px 10px 20px;
+}
+
+.new-chat-btn {
+    display: inline-block;
+    padding: 10px 14px;
+    background: #007aff;
+    color: white;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+.dm-list {
+    display: flex;
+    flex-direction: column;
+    margin: 10px 15px;
+}
+
+.dm-item {
+    display: flex;
+    align-items: center;
+    padding: 14px;
+    background: var(--card);
+    border-radius: 12px;
+    border: 1px solid var(--nav-border);
+    margin-bottom: 10px;
+    text-decoration: none;
+    color: var(--text);
+}
+
+.dm-item:hover {
+    background: #f0f0f0;
+}
+
+.dm-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    margin-right: 12px;
+}
+
+.dm-info {
+    flex: 1;
+}
+
+.dm-user {
+    font-weight: 600;
+    font-size: 17px;
+}
+
+.dm-last {
+    font-size: 14px;
+    color: #666;
+}
+
+.dm-time {
+    font-size: 12px;
+    color: #999;
+}
+
+.empty-inbox {
+    text-align: center;
+    color: #777;
+    padding: 40px 0;
+    font-size: 16px;
+}
+
+/* ============================================================
+   CHAT PAGE — TWO-PANE LAYOUT
+   ============================================================ */
+
+.container {
+    display: flex;
+    height: 100vh;
+}
+
+/* LEFT SIDEBAR */
+.sidebar {
+    width: 28%;
+    background: var(--card);
+    border-right: 1px solid var(--nav-border);
+    overflow-y: auto;
+}
+
+.sidebar-header {
+    padding: 15px;
+    font-size: 20px;
+    font-weight: bold;
+    border-bottom: 1px solid var(--nav-border);
+}
+
+.chat-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    border-bottom: 1px solid var(--nav-border);
+    text-decoration: none;
+    color: var(--text);
+}
+
+.chat-item:hover {
+    background: #f0f0f0;
+}
+
+.chat-item.active {
+    background: #e6f0ff;
+}
+
+.chat-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    margin-right: 12px;
+}
+
+.chat-info {
+    flex-grow: 1;
+}
+
+.chat-info b {
+    font-size: 16px;
+}
+
+.chat-info p {
+    margin: 2px 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.chat-time {
+    font-size: 12px;
+    color: #888;
+}
+
+/* RIGHT CHAT AREA */
+.chat-area {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+}
+
+.chat-header {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    background: var(--card);
+    border-bottom: 1px solid var(--nav-border);
+}
+
+.header-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.header-name {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+
+/* ============================================================
+   CHAT MESSAGES
+   ============================================================ */
+
+.chat-box {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* message row */
+.message-row {
+    display: flex;
+    align-items: flex-end;
+    margin-bottom: 10px;
+}
+
+/* avatar */
+.msg-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+/* bubble */
+.bubble {
+    max-width: 65%;
+    padding: 10px 14px;
+    border-radius: 18px;
+    font-size: 15px;
+    line-height: 1.4;
+    position: relative;
+    animation: messagePop .15s ease;
+}
+
+/* RECEIVED MESSAGE */
+.message-row.other .bubble {
+    background: orange;
+    color: #000;
+    border-bottom-left-radius: 6px;
+}
+
+/* SENT MESSAGE */
+.message-row.me {
+    justify-content: flex-end;
+}
+
+.message-row.me .bubble {
+    background: orange;
+    color: white;
+    border-bottom-right-radius: 6px;
+}
+
+/* timestamp */
+.timestamp {
+    font-size: 11px;
+    color: #888;
+    margin-top: 4px;
+}
+
+/* animation */
+@keyframes messagePop {
+    from {
+        transform: scale(.9);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* ============================================================
+   INPUT BAR + TYPING
+   ============================================================ */
+
+.input-bar {
+    display: flex;
+    padding: 10px;
+    background: var(--card);
+    border-top: 1px solid var(--nav-border);
+}
+
+.input-bar input {
+    flex: 1;
+    padding: 10px;
+    border-radius: 20px;
+    border: 1px solid var(--nav-border);
+    background: var(--card);
+    color: var(--text);
+    margin-right: 10px;
+}
+
+.input-bar button {
+    padding: 10px 16px;
+    background: #007aff;
+    color: white;
+    border: none;
+    border-radius: 20px;
+}
+
+.typing {
+    padding-left: 15px;
+    font-size: 13px;
+    color: #777;
+}
+
+/* ============================================================
+   PROFILE PAGE + EDIT PROFILE
+   ============================================================ */
 
 .profile {
     text-align: center;
@@ -216,8 +408,6 @@ button:hover {
     margin-bottom: 15px;
 }
 
-/* ===== EDIT PROFILE ===== */
-
 form {
     background: var(--card);
     padding: 20px;
@@ -227,7 +417,8 @@ form {
     margin: 30px auto;
 }
 
-textarea, input {
+textarea,
+input {
     width: 100%;
     padding: 10px;
     border-radius: 8px;
@@ -236,3 +427,4 @@ textarea, input {
     color: var(--text);
     margin-bottom: 15px;
 }
+

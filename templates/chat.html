@@ -1,67 +1,176 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Chat</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+<title>Chat</title>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
 </head>
+
 <body>
 
-<a href="/home">Home</a> | <a href="/logout">Logout</a>
+<div class="container">
 
-<div id="chat">
-  {% for m in messages %}
-    <div class="bubble {{ 'me' if m.user == username else 'other' }}">
-      <b><a href="/profile/{{ m.user }}">{{ m.user }}</a></b><br>
-      {{ m.text }}
-      <span>{{ m.timestamp }}</span>
+    <!-- LEFT SIDEBAR -->
+    <div class="sidebar">
+
+        <div class="sidebar-header">
+            Messages
+        </div>
+
+        <!-- Start Chat -->
+        <div style="padding:15px;">
+            <form action="/new_chat" method="POST">
+                <input name="username" placeholder="Start chat with username" required>
+                <button type="submit">Start</button>
+            </form>
+        </div>
+
+        {% if chats %}
+
+            {% for chat in chats %}
+
+            <a class="chat-item {% if chat.id == chat_id %}active{% endif %}" href="/chat/{{ chat.id }}">
+
+                <img src="/static/default.png" class="chat-avatar">
+
+                <div class="chat-info">
+                    <b>Chat {{ chat.id }}</b>
+                    <p>Open conversation</p>
+                </div>
+
+            </a>
+
+            {% endfor %}
+
+        {% else %}
+
+            <div class="empty-inbox">
+                No conversations yet
+            </div>
+
+        {% endif %}
+
     </div>
-  {% endfor %}
-</div>
 
-<div id="typing"></div>
 
-<div id="input">
-  <input
-    id="msg"
-    placeholder="Type..."
-    oninput="typing()"
-    onkeydown="if (event.key === 'Enter') send()"
-  />
-  <button onclick="send()">Send</button>
-</div>
+    <!-- RIGHT CHAT AREA -->
+    <div class="chat-area">
+
+        {% if chat_id %}
+
+        <!-- Chat Header -->
+        <div class="chat-header">
+
+            <img src="/static/default.png" class="header-avatar">
+
+            <div class="header-name">
+                Chat {{ chat_id }}
+            </div>
+
+        </div>
+
+
+        <!-- Messages -->
+        <div class="chat-box" id="messages">
+
+            {% for msg in messages %}
+
+            <div class="bubble {% if msg.user == current_user.username %}me{% else %}other{% endif %}">
+                {{ msg.text }}
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+
+        <!-- Input Bar -->
+        <form class="input-bar" id="message-form">
+
+            <input
+                id="message-input"
+                type="text"
+                placeholder="Type a message..."
+                autocomplete="off"
+            >
+
+            <button type="submit">Send</button>
+
+        </form>
+
 
 <script>
-  const socket = io("https://web-chat-app-frdo.onrender.com", {
-    transports: ["websocket"],
-    upgrade: false,
-    query: { username: "{{ username }}" }
-  });
 
-  socket.on("chat_message", data => {
+const socket = io({
+    query: {
+        username: "{{ current_user.username }}"
+    }
+});
+
+const chatId = "{{ chat_id }}";
+
+socket.emit("join_chat", chatId);
+
+
+
+document.getElementById("message-form").addEventListener("submit", function(e){
+
+    e.preventDefault();
+
+    const input = document.getElementById("message-input");
+
+    const text = input.value.trim();
+
+    if(text === "") return;
+
+
+    socket.emit("chat_message", {
+        chat_id: chatId,
+        text: text
+    });
+
+    input.value = "";
+
+});
+
+
+socket.on("chat_message", function(data){
+
+    const messagesDiv = document.getElementById("messages");
+
     const div = document.createElement("div");
-    div.className = "bubble " + (data.user === "{{ username }}" ? "me" : "other");
-    div.innerHTML = `<b><a href="/profile/${data.user}">${data.user}</a></b><br>${data.text}<span>${data.time}</span>`;
-    document.getElementById("chat").appendChild(div);
-    document.getElementById("chat").scrollTop = document.getElementById("chat").scrollHeight;
-  });
 
-  function send() {
-    const msg = document.getElementById("msg").value;
-    if (msg.trim() === "") return;
-    socket.emit("chat_message", msg);
-    document.getElementById("msg").value = "";
-  }
+    if(data.user === "{{ current_user.username }}"){
+        div.className = "bubble me";
+    } else {
+        div.className = "bubble other";
+    }
 
-  function typing() {
-    socket.emit("typing");
-  }
+    div.innerText = data.text;
 
-  function toggleDark() {
-    document.body.classList.toggle("dark");
-  }
+    messagesDiv.appendChild(div);
+
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+});
+
 </script>
+
+
+        {% else %}
+
+        <div style="display:flex;align-items:center;justify-content:center;height:100%;">
+            <h2>Select a conversation</h2>
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
 
 </body>
 </html>

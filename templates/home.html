@@ -1,50 +1,181 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Home</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <style>
-    .profile-card {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      padding: 10px;
-      margin-bottom: 10px;
-      background: #f5f5f5;
-      border-radius: 8px;
-    }
-    .avatar {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-  </style>
+    <title>Messages</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+        }
+
+        .header {
+            padding: 15px;
+            font-size: 22px;
+            font-weight: bold;
+            background: white;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .profile-card {
+            background: white;
+            margin: 15px;
+            padding: 15px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            border: 1px solid #ddd;
+        }
+
+        .profile-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            margin-right: 15px;
+        }
+
+        .profile-info {
+            flex-grow: 1;
+        }
+
+        .profile-info .name {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .profile-info .bio {
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .edit-btn {
+            padding: 8px 14px;
+            background: #007bff;
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .new-chat-container {
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .new-chat-btn {
+            background: #007aff;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .dm-list {
+            margin: 15px;
+        }
+
+        .dm-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            text-decoration: none;
+            color: black;
+            border: 1px solid #ddd;
+        }
+
+        .dm-item:hover {
+            background: #f0f0f0;
+        }
+
+        .dm-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 12px;
+        }
+
+        .dm-info {
+            flex-grow: 1;
+        }
+
+        .dm-user {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .dm-last {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .dm-time {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .empty-inbox {
+            text-align: center;
+            color: #777;
+            padding: 40px;
+        }
+    </style>
 </head>
+
 <body>
 
-<h2>All Users</h2>
-
-{% for u in users %}
-  <div class="profile-card">
-    <img src="{{ u.avatar }}" class="avatar">
-    <div>
-      <a href="/profile/{{ u.username }}"><b>{{ u.username }}</b></a><br>
-      <small>{{ u.bio[:60] }}...</small>
+    <div class="header">
+        Messages
+        <a href="/logout" class="logout-btn">Logout</a>
+        <img src="duckcord.jpeg" class="img-logo">
     </div>
-  </div>
-{% endfor %}
 
-<br>
-<a href="/chat">Go to Chat</a>
+    <!-- PROFILE CARD -->
+    <div class="profile-card">
+        <img src="{{ current_user.avatar }}" class="profile-avatar">
 
-<script>
-function toggleDark() {
-    document.body.classList.toggle("dark");
-}
-</script>
+        <div class="profile-info">
+            <div class="name">{{ current_user.username }}</div>
+            <div class="bio">{{ current_user.bio }}</div>
+        </div>
 
-<button class="toggle-dark" onclick="toggleDark()">Dark Mode</button>
+        <a href="/edit-profile" class="edit-btn">Edit</a>
+    </div>
+
+    <!-- NEW CHAT BUTTON -->
+    <div class="new-chat-container">
+        <a href="/chat" class="new-chat-btn">Start New Chat</a>
+    </div>
+
+    <!-- DM LIST -->
+    <div class="dm-list">
+        {% if chats %}
+            {% for c in chats %}
+            <a class="dm-item" href="/chat/{{ c.chat_id }}">
+                <img src="{{ c.other.avatar }}" class="dm-avatar">
+
+                <div class="dm-info">
+                    <div class="dm-user">{{ c.other.username }}</div>
+                    <div class="dm-last">{{ c.last_msg }}</div>
+                </div>
+
+                <div class="dm-time">{{ c.last_time }}</div>
+            </a>
+            {% endfor %}
+        {% else %}
+            <div class="empty-inbox">
+                No conversations yet.<br>
+                Tap “Start New Chat” to begin messaging.
+            </div>
+        {% endif %}
+    </div>
 
 </body>
 </html>
