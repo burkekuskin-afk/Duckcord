@@ -52,13 +52,15 @@ class Message(db.Model):
     text = db.Column(db.Text)
     time_stamp = db.Column(db.String(20))
 
+class Chat(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
 class ChatUser(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     chat_id = db.Column(db.Integer, db.ForeignKey("chat.id"))
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
 
-class Chat(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -119,7 +121,7 @@ def profile(username):
     user = User.query.filter_by(username=username).first_or_404()
     return render_template("profile.html", user=user)
 
-@app.route("/edit_profile", methods=["GET", "POST"])
+@app.route("/edit-profile", methods=["GET", "POST"])
 @login_required
 def edit_profile():
     if request.method == "POST":
@@ -129,7 +131,7 @@ def edit_profile():
         return redirect(f"/profile.html/{current_user.username}")
     return render_template("edit_profile.html", user=current_user)
 
-@app.route("/chat")
+@app.route("/chat/<int:chat_id>")
 @login_required
 def chat(chat_id):
     messages = Message.query.filter_by(chat_id=chat_id).all()
