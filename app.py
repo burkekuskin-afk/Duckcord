@@ -54,6 +54,26 @@ class Message(db.Model):
 
 class Chat(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    def other_user(self, current_user_id):
+        return (
+            db.session.query(User)
+            .join(ChatUser)
+            .filter(ChatUser.chat_id == self.id, User.id != current_user_id)
+            .first()
+        )
+    def participants(self):
+        return (
+            db.session.query(User)
+            .join(ChatUser)
+            .filter(ChatUser.chat_id == self.id)
+            .all()
+        )
+    def last_message(self):
+        return (
+            Message.query
+            .filter_by(chat_id=self.id)
+            .order_by(Message.id.desc())
+        )
 
 class ChatUser(db.Model):
     id = db.Column(db.Integer, primary_key=True)
