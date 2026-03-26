@@ -229,7 +229,7 @@ def new_chat():
         return redirect(f"/chat/{chat.id}")
 
     users = User.query.filter(User.id != current_user.id).all()
-    return render_template("new_chat.html", users=users
+    return render_template("new_chat.html", users=users)
 
 @socketio.on("join_chat")
 def join(chat_id):
