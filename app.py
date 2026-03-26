@@ -146,7 +146,7 @@ def profile(username):
 def edit_profile():
     if request.method == "POST":
         current_user.bio = request.form["bio"]
-        current_user.profile = request.form["profile"]
+        #current_user.profile = request.form["profile"]
         db.session.commit()
         return redirect(f"/profile.html/{current_user.username}")
     return render_template("edit_profile.html", user=current_user)
