@@ -155,18 +155,21 @@ def edit_profile():
 @login_required
 def chat(chat_id):
     messages = Message.query.filter_by(chat_id=chat_id).all()
+
     other = (
-        db.sesion.query(User)
+        db.session.query(User)
         .join(ChatUser)
-        .filter(ChatUser.chat_id==chat_id, User.id != current_user.id)
+        .filter(ChatUser.chat_id == chat_id, User.id != current_user.id)
         .first()
     )
+
     chats = (
         db.session.query(Chat)
         .join(ChatUser)
-        .filter(ChatUser.user_id==current_user.id)
+        .filter(ChatUser.user_id == current_user.id)
         .all()
     )
+
     return render_template(
         "chat.html",
         username=current_user.username,
@@ -175,8 +178,6 @@ def chat(chat_id):
         chats=chats,
         other=other
     )
-
-
 @app.route("/chat")
 @login_required
 def chat_list():
