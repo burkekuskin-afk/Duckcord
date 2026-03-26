@@ -176,35 +176,6 @@ def chat(chat_id):
         other=other
     )
 
-@app.route("/new_chat", methods=["GET", "POST"])
-@login_required
-def new_chat():
-    if request.method == "POST":
-        username = request.form["username"]
-        other = User.query.filter_by(username=username).first()
-        if not other or other.id == current_user.id:
-            return redirect("/chat")
-        exists = (
-            db.session.query(Chat)
-            .join(ChatUser)
-            .filter(ChatUser.user_id.in_([current_user.id, other.id]))
-            .group_by(Chat.id)
-            .having(db.func.count(Chat.id) == 2)
-            .first
-        )
-        if exists:
-            return redirect(f"/chat/{exists.id}")
-        chat = Chat()
-        db.session.add(chat)
-        db.session.commit()
-        db.session.add_all([
-            ChatUser(chat_id=chat.id, user_id=current_user.id),
-            ChatUser(chat_id=chat.id, user_id=other.id)
-        ])
-        db.session.commit()
-        return redirect(f"/chat/{chat.id}")
-    users = User.query.filter(User.id != current_user.id).all()
-    return render_template("new_chat.html", users=users)
 
 @app.route("/chat")
 @login_required
@@ -222,6 +193,43 @@ def chat_list():
         messages = [],
         chat_id = None
     )
+
+@app.route("/new_chat", methods=["GET", "POST"])
+@login_required
+def new_chat():
+    if request.method == "POST":
+        username = request.form["username"]
+        other = User.query.filter_by(username=username).first()
+
+        if not other or other.id == current_user.id:
+            return redirect("/chat")
+
+        existing = (
+            db.session.query(Chat)
+            .join(ChatUser)
+            .filter(ChatUser.user_id.in_([current_user.id, other.id]))
+            .group_by(Chat.id)
+            .having(db.func.count(Chat.id) == 2)
+            .first()
+        )
+
+        if existing:
+            return redirect(f"/chat/{existing.id}")
+
+        chat = Chat()
+        db.session.add(chat)
+        db.session.commit()
+
+        db.session.add_all([
+            ChatUser(chat_id=chat.id, user_id=current_user.id),
+            ChatUser(chat_id=chat.id, user_id=other.id)
+        ])
+        db.session.commit()
+
+        return redirect(f"/chat/{chat.id}")
+
+    users = User.query.filter(User.id != current_user.id).all()
+    return render_template("new_chat.html", users=users
 
 @socketio.on("join_chat")
 def join(chat_id):
