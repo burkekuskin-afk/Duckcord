@@ -189,7 +189,7 @@ def new_chat():
             .join(ChatUser)
             .filter(ChatUser.user_id.in_([current_user.id, other.id]))
             .group_by(Chat.id)
-            .halving(db.func.count(Chat.id) == 2)
+            .having(db.func.count(Chat.id) == 2)
             .first
         )
         if exists:
