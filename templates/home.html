@@ -135,7 +135,9 @@
         Messages
         <nav>
             <a href="/logout" class="logout-btn">Logout</a>
-            <img src="../duckcord.jpeg" alt="Logo" class="img-logo">
+            <a href="{{ url_for('home') }}" class="goose-logo">
+                <img src="{{ url_for('static', filename='duckcord.jpeg') }}" alt="Home">
+            </a>
         </nav>
     </div>
 

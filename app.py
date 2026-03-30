@@ -73,6 +73,7 @@ class Chat(db.Model):
             Message.query
             .filter_by(chat_id=self.id)
             .order_by(Message.id.desc())
+            .first()
         )
 
 class ChatUser(db.Model):
@@ -115,23 +116,16 @@ def home():
     )
     chat_data = []
     for chat in chats:
-        last_msg = (
-            Message.query.filter_by(chat_id=chat.id)
-            .order_by(Message.id.desc())
-            .first()
-        )
-        other = (
-            db.session.query(User)
-            .join(ChatUser)
-            .filter(ChatUser.chat_id==chat.id, User.id != current_user.id)
-            .first()
-        )
+        last_msg = chat.last_message()
+        other = chat.other_user(current_user.id)
+
         chat_data.append({
-            "chat_id": chat.id,
-            "other": other,
-            "last_msg": last_msg.text if last_msg else "",
-            "last_time": last_msg.timestamp if last_msg else ""
+            "chat_id":chat.id,
+            "other":other,
+            "last_msg":last_msg.text if last_msg else "",
+            "last_time":last_msg.timestamp if last_msg else ""
         })
+
 
     return render_template("home.html", chats=chat_data)
 
