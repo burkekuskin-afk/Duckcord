@@ -18,7 +18,7 @@ from flask_socketio import join_room
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "super_secret"
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///chat.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///chat2.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
@@ -172,22 +172,6 @@ def chat(chat_id):
         chats=chats,
         other=other
     )
-@app.route("/chat")
-@login_required
-def chat_list():
-    chats = (
-        db.session.query(Chat)
-        .join(ChatUser)
-        .filter(ChatUser.user_id == current_user.id)
-        .all()
-    )
-    return render_template(
-        "chat.html",
-        username = current_user.username,
-        chats = chats,
-        messages = [],
-        chat_id = None
-    )
 
 @app.route("/new_chat", methods=["GET", "POST"])
 @login_required
@@ -225,6 +209,23 @@ def new_chat():
 
     users = User.query.filter(User.id != current_user.id).all()
     return render_template("new_chat.html", users=users)
+
+@app.route("/chat")
+@login_required
+def chat_list():
+    chats = (
+        db.session.query(Chat)
+        .join(ChatUser)
+        .filter(ChatUser.user_id == current_user.id)
+        .all()
+    )
+    return render_template(
+        "chat.html",
+        username = current_user.username,
+        chats = chats,
+        messages = [],
+        chat_id = None
+    )
 
 @socketio.on("join_chat")
 def join(chat_id):
