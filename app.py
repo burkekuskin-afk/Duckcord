@@ -18,7 +18,7 @@ from flask_socketio import join_room
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "super_secret"
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///chat2.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///chat3.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
@@ -48,9 +48,10 @@ class User(UserMixin, db.Model):
 
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    chat_id = db.Column(db.Integer, db.ForeignKey("chat.id"))  # REQUIRED
     user = db.Column(db.String(100))
     text = db.Column(db.Text)
-    time_stamp = db.Column(db.String(20))
+    timestamp = db.Column(db.String(20))  # Match what socket emits
 
 class Chat(db.Model):
     id = db.Column(db.Integer, primary_key=True)
