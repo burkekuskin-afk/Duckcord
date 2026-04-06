@@ -122,10 +122,10 @@ socket.on("chat_message", function(data){
     row.className = "message-row " + (data.user === "{{ current_user.username }}" ? "me" : "other");
 
     if(data.user !== "{{ current_user.username }}"){
-        const avatar = document.createElement("img");
-        avatar.className = "msg-avatar";
-        avatar.src = "{{ other.avatar if other.avatar else url_for('static', filename='default.png') }}";
-        row.appendChild(avatar);
+        const profile = document.createElement("img");
+        profile.className = "msg-avatar";
+        profile.src = "{{ other.profile if other.profile else url_for('static', filename='default.png') }}";
+        row.appendChild(profile);
     }
 
     const wrapper = document.createElement("div");
