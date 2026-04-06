@@ -30,7 +30,7 @@
                 {% set last = chat.last_message() %}
 
                 <a class="chat-item {% if chat.id == chat_id %}active{% endif %}" href="/chat/{{ chat.id }}">
-                    <img src="{{ other.avatar if other.avatar else url_for('static', filename='default.png') }}" class="chat-avatar">
+                    <img src="{{ other.profile if other.profile else url_for('static', filename='default.png') }}" class="chat-avatar">
 
                     <div class="chat-info">
                         <b>{{ other.username }}</b>
@@ -58,7 +58,7 @@
 
         <!-- Chat Header -->
         <div class="chat-header">
-            <img src="{{ other.avatar if other.avatar else url_for('static', filename='default.png') }}" class="header-avatar">
+            <img src="{{ other.profile if other.profile else url_for('static', filename='default.png') }}" class="header-avatar">
             <div class="header-name">{{ other.username }}</div>
         </div>
 
@@ -69,7 +69,7 @@
             <div class="message-row {% if msg.user == current_user.username %}me{% else %}other{% endif %}">
 
                 {% if msg.user != current_user.username %}
-                    <img src="{{ other.avatar if other.avatar else url_for('static', filename='default.png') }}" class="msg-avatar">
+                    <img src="{{ other.profile if other.profile else url_for('static', filename='default.png') }}" class="msg-avatar">
                 {% endif %}
 
                 <div>
