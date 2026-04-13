@@ -254,7 +254,7 @@ def disconnect():
     if username:
         emit("status", f"{username} has left the chat", broadcast=True)
 
-@socketio.on("message")
+@socketio.on("chat_message")
 def data_handle_message(data):
     chat_id = data["chat_id"]
     username = online.get(request.sid)
